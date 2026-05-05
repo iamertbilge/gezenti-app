@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../database/db_helper.dart';
+
 class AddPlaceScreen extends StatefulWidget {
   const AddPlaceScreen({super.key});
 
@@ -20,16 +22,73 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     super.dispose();
   }
 
-  void _onSavePressed() {
-    debugPrint("Kaydet butonuna basıldı");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Kaydet butonuna basıldı. SQLite entegrasyonu Uğur tarafından bağlanacak.',
+  Future<void> _onSavePressed() async {
+    final name = _nameController.text.trim();
+    final description = _descriptionController.text.trim();
+    final location = _locationController.text.trim();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mekan adı boş bırakılamaz.'),
+          behavior: SnackBarBehavior.floating,
         ),
-        behavior: SnackBarBehavior.floating,
-      ),
+      );
+      return;
+    }
+
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Açıklama boş bırakılamaz.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (location.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Konum bilgisi boş bırakılamaz.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final place = Place(
+      name: name,
+      description: description,
+      imagePath: '',
+      date: DateTime.now().toIso8601String(),
     );
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    try {
+      await DbHelper.instance.insertPlace(place);
+
+      if (!context.mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Mekan yerel veritabanına kaydedildi.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      _nameController.clear();
+      _descriptionController.clear();
+      _locationController.clear();
+    } catch (_) {
+      if (!context.mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Mekan kaydedilirken bir hata oluştu.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
