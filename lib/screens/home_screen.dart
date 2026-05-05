@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'add_place_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -46,13 +47,9 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Yeni mekan ekleme ekranı Görev 5 kapsamında hazırlanacak.',
-              ),
-              behavior: SnackBarBehavior.floating,
-            ),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddPlaceScreen()),
           );
         },
         child: const Icon(Icons.add),
