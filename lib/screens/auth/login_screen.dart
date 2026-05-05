@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../home_screen.dart';
+import '../../services/auth_service.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -86,8 +89,33 @@ class LoginScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: () {
-                      print('Giriş butonuna tıklandı');
+                    onPressed: () async {
+                      try {
+                        await AuthService.instance.signIn(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+
+                        if (!context.mounted) return;
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
+                      } on AuthFailure catch (error) {
+                        if (!context.mounted) return;
+
+                        _showErrorSnackBar(context, error.message);
+                      } catch (_) {
+                        if (!context.mounted) return;
+
+                        _showErrorSnackBar(
+                          context,
+                          'Beklenmeyen bir hata oluştu.',
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
@@ -132,6 +160,12 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }

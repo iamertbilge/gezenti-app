@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../home_screen.dart';
+import '../../services/auth_service.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -106,8 +109,34 @@ class RegisterScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: () {
-                      print('Kayıt ol butonuna tıklandı');
+                    onPressed: () async {
+                      try {
+                        await AuthService.instance.register(
+                          email: emailController.text,
+                          password: passwordController.text,
+                          displayName: nameController.text,
+                        );
+
+                        if (!context.mounted) return;
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
+                      } on AuthFailure catch (error) {
+                        if (!context.mounted) return;
+
+                        _showErrorSnackBar(context, error.message);
+                      } catch (_) {
+                        if (!context.mounted) return;
+
+                        _showErrorSnackBar(
+                          context,
+                          'Beklenmeyen bir hata oluştu.',
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
@@ -152,6 +181,12 @@ class RegisterScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }

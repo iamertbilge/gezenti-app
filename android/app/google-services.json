@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "645373992293",
+    "project_id": "gezenti-app",
+    "storage_bucket": "gezenti-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:645373992293:android:ed88cb67fea4ee755fd58c",
+        "android_client_info": {
+          "package_name": "com.example.gezenti_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZaewhFsl6weBtCueh_-afHxsWwvOEDnA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
