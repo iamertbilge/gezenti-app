@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'add_place_screen.dart';
+import 'place_detail_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -79,89 +80,114 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildPlaceCard(BuildContext context, _PlacePost place) {
+    final heroTag = 'place-image-${place.id}';
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       clipBehavior: Clip.antiAlias,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildPostImage(place.imageUrl),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  place.name,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        place.location,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlaceDetailScreen(
+                name: place.name,
+                description: place.description,
+                location: place.location,
+                date: place.date,
+                imageUrl: place.imageUrl,
+                heroTag: heroTag,
+                userEmail: place.userEmail,
+              ),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildPostImage(place.imageUrl, heroTag),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    place.name,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          place.location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        place.date,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey.shade700,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.calendar_today,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      place.date,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  place.description,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    place.description,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPostImage(String imageUrl) {
+  Widget _buildPostImage(String imageUrl, String heroTag) {
+    Widget imageWidget;
     if (imageUrl.isEmpty) {
-      return _buildImageFallback();
+      imageWidget = _buildImageFallback();
+    } else {
+      imageWidget = SizedBox(
+        height: 200,
+        child: Image.network(
+          imageUrl,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return _buildImageLoadingPlaceholder();
+          },
+          errorBuilder: (context, error, stackTrace) => _buildImageFallback(),
+        ),
+      );
     }
 
-    return SizedBox(
-      height: 200,
-      child: Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return _buildImageLoadingPlaceholder();
-        },
-        errorBuilder: (context, error, stackTrace) => _buildImageFallback(),
-      ),
+    return Hero(
+      tag: heroTag,
+      child: imageWidget,
     );
   }
 
@@ -299,6 +325,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _PlacePost {
+  final String id;
   final String name;
   final String description;
   final String location;
@@ -308,6 +335,7 @@ class _PlacePost {
   final String userEmail;
 
   _PlacePost({
+    required this.id,
     required this.name,
     required this.description,
     required this.location,
@@ -323,6 +351,7 @@ class _PlacePost {
     final data = document.data() ?? <String, dynamic>{};
 
     return _PlacePost(
+      id: document.id,
       name: _readText(data['name'], 'İsimsiz Mekan'),
       description: _readText(data['description'], 'Açıklama eklenmemiş.'),
       location: _readText(data['location'], 'Konum belirtilmedi'),
